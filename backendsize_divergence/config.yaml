@@ -4,4 +4,3 @@ queryUrl:
 servers:
   - labelValues:
     - alertmanager
-.
