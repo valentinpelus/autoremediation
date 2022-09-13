@@ -1,0 +1,7 @@
+AlertCheckInterval: 
+- 60
+queryUrl: 
+servers:
+  - labelValues:
+    - alertmanager
+.
