@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	//appsv1 "k8s.io/api/apps/v1"
 
@@ -17,6 +18,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.m6web.fr/valentin-pelus/autoremediate/cli"
 )
 
 type HTTPClient interface {
@@ -28,18 +31,12 @@ type Response struct {
 	Data   []Data `json:"data"`
 }
 type Labels struct {
-	AdminAlert              string `json:"admin_alert"`
-	Alertgroup              string `json:"alertgroup"`
-	Alertname               string `json:"alertname"`
-	ClusterName             string `json:"cluster_name"`
-	Horizontalpodautoscaler string `json:"horizontalpodautoscaler"`
-	MetricName              string `json:"metric_name"`
-	Namespace               string `json:"namespace"`
-	Pod                     string `json:"pod"`
-	NmcbackAlert            string `json:"nmcback_alert"`
-	OnCall                  string `json:"on_call"`
-	Severity                string `json:"severity"`
-	Team                    string `json:"team"`
+	AdminAlert  string `json:"admin_alert"`
+	Alertgroup  string `json:"alertgroup"`
+	Alertname   string `json:"alertname"`
+	ClusterName string `json:"cluster_name"`
+	Namespace   string `json:"namespace"`
+	Pod         string `json:"pod"`
 }
 
 type Data struct {
@@ -52,7 +49,7 @@ var (
 
 func getPodDivergence(podName string, clientset *kubernetes.Clientset) bool {
 	// Namespace on this alert is set at static on ingress-controller-v2
-	namespace := "webserver"
+	namespace := "ingress-controller-v2"
 
 	// Listing Pods from chosen namespace
 	pods, _ := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: ""})
@@ -114,11 +111,10 @@ func getVMAlertBackendSize(server string, clientset *kubernetes.Clientset) bool 
 		if (alerts.Labels.Alertname == "haproxyBackendSizeDivergence") && (len(alerts.Labels.Pod) > 0) {
 			log.Info().Msgf("Alert %s is firing on pod %s deletion ongoing", alerts.Labels.Alertname, alerts.Labels.Pod)
 			podName := alerts.Labels.Pod
-			podName = "web-test-56c56dc94b-csktl"
-
 			//Proceeding to the deletion of pod if alert is firing
 			deletePodDivergence(podName, clientset)
 			alertFiring = true
+			break
 		} else {
 			log.Info().Msgf("No pod in state of backendsize divergence")
 			alertFiring = false
@@ -129,8 +125,9 @@ func getVMAlertBackendSize(server string, clientset *kubernetes.Clientset) bool 
 
 func main() {
 
-	// Init of zerolog library
+	// Init of zerolog library and config
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	confPath := flag.String("conf", "config.yaml", "Config path")
 	debug := flag.Bool("debug", false, "sets log level to debug")
 	flag.Parse()
 
@@ -138,6 +135,8 @@ func main() {
 	if *debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
+
+	cli.LoadConf(*confPath)
 
 	// Loading kubeconfig file with context
 	var kubeconfig *string
@@ -160,10 +159,14 @@ func main() {
 	// Init http client
 	Client = &http.Client{}
 
-	// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
-	server := "https://alertmanager.staging.6cloud.fr/api/v1/alerts"
-	getAlert := getVMAlertBackendSize(server, clientset)
-	log.Info().Msgf("Alert is firing %s ", getAlert)
-}
+	// Init AMUrl to allow alerts query
+	jsonUrl := cli.Conf.QueryURL + "/api/v1/alerts"
 
-func int32Ptr(i int32) *int32 { return &i }
+	for {
+		time.Sleep(1 * time.Second)
+
+		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
+		getAlert := getVMAlertBackendSize(jsonUrl, clientset)
+		log.Info().Msgf("Check ongoing on %s ", getAlert)
+	}
+}
