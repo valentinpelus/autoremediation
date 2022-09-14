@@ -2,24 +2,23 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	//appsv1 "k8s.io/api/apps/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
+	"k8s.io/client-go/rest"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.m6web.fr/valentin-pelus/autoremediate/cli"
+	"github.com/valentinpelus/go-package/cli"
 )
 
 type HTTPClient interface {
@@ -129,6 +128,7 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	confPath := flag.String("conf", "config.yaml", "Config path")
 	debug := flag.Bool("debug", false, "sets log level to debug")
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	flag.Parse()
 
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -139,25 +139,18 @@ func main() {
 	cli.LoadConf(*confPath)
 
 	// Loading kubeconfig file with context
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
-
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
+	// creates the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 
 	// Init http client
-	Client = &http.Client{}
+	Client = &http.Client{Transport: tr}
 
 	// Init AMUrl to allow alerts query
 	jsonUrl := cli.Conf.QueryURL + "/api/v1/alerts"
