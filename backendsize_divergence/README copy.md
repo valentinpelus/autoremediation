@@ -1,2 +1,0 @@
-# autoremediate
-Autoremediation repository golang

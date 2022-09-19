@@ -1,6 +1,2 @@
-AlertCheckInterval: 
-- 60
-queryUrl: http://192.168.49.2:31000
-servers:
-  - labelValues:
-    - alertmanager
+alertCheckInterval: 60
+queryUrl: 

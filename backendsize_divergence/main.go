@@ -1,20 +1,18 @@
 package main
 
 import (
-	"aws/autoremediate/backendsize_divergence/cli"
-	"context"
 	"crypto/tls"
 	"flag"
 	"net/http"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	"cli"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	//"github.com/valentinpelus/go-package/cli"
 )
 
 type HTTPClient interface {
@@ -74,29 +72,12 @@ func main() {
 
 	// Init AMUrl to allow alerts query
 	jsonUrl := cli.Conf.QueryURL + "/api/v1/alerts"
-
-	namespace := "ingress-controller-v2"
-	podName := "ingress-test2"
-
-	pods, err := clientset.CoreV1().Pods("ingress-controller-v2").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-	log.Info().Msgf("List of pod %s", pods)
-	log.Info().Msgf("Searching pod %s in namespace %s", podName, namespace)
-	// Parsing pod on the namespace to find the right one
-	/*for _, podsInfo := range (*pods).Items {
-		log.Info().Msgf("Parsing pod %s", podsInfo.Name)
-		if podsInfo.Name == podName {
-			log.Info().Msgf("Found pod %s in namespace %s", podName, namespace)
-		}
-	}*/
+	AlertCheckInterval := cli.Conf.AlertCheckInterval
 
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(AlertCheckInterval * time.Second)
 		log.Info().Msgf("Check ongoing")
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
-		//getAlert := getVMAlertBackendSize(jsonUrl, clientset)
 		podName, namespace := cli.GetVMAlertBackendSize(jsonUrl)
 		if (len(podName) > 0) && (len(namespace) > 0) {
 			log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podName, namespace)
