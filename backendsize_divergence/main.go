@@ -1,15 +1,14 @@
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"net/http"
 	"time"
 
+	"github.com/valentinpelus/go-package/kuberemediate"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"cli"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -46,7 +45,7 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	confPath := flag.String("conf", "config.yaml", "Config path")
 	debug := flag.Bool("debug", false, "sets log level to debug")
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	//tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	flag.Parse()
 
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -54,7 +53,7 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	cli.LoadConf(*confPath)
+	kuberemediate.LoadConf(*confPath)
 
 	// Loading kubeconfig file with context
 	config, err := rest.InClusterConfig()
@@ -68,20 +67,19 @@ func main() {
 	}
 
 	// Init http client
-	Client = &http.Client{Transport: tr}
+	Client = &http.Client{}
 
 	// Init AMUrl to allow alerts query
-	jsonUrl := cli.Conf.QueryURL + "/api/v1/alerts"
-	AlertCheckInterval := cli.Conf.AlertCheckInterval
+	jsonUrl := kuberemediate.Conf.QueryURL + "/api/v1/alerts"
 
 	for {
-		time.Sleep(AlertCheckInterval * time.Second)
+		time.Sleep(1 * time.Second)
 		log.Info().Msgf("Check ongoing")
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
-		podName, namespace := cli.GetVMAlertBackendSize(jsonUrl)
+		podName, namespace := kuberemediate.GetVMAlertBackendSize(jsonUrl)
 		if (len(podName) > 0) && (len(namespace) > 0) {
 			log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podName, namespace)
-			cli.DeletePod(podName, clientset, namespace)
+			kuberemediate.DeletePod(podName, clientset, namespace)
 		}
 	}
 }
