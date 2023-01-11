@@ -1,6 +1,1 @@
-AlertCheckInterval: 
-- 60
-queryUrl: https://alertmanager.staging.6cloud.fr
-servers:
-  - labelValues:
-    - alertmanager
+queryUrl: 
