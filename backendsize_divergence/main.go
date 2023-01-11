@@ -67,7 +67,7 @@ func main() {
 	}
 
 	// Init http client
-	Client = &http.Client{}
+	Client = &http.Client{Transport: tr}
 
 	// Init AMUrl to allow alerts query
 	jsonUrl := kuberemediate.Conf.QueryURL + "/api/v1/alerts"
