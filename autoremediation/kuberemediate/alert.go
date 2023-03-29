@@ -61,6 +61,7 @@ func GetVMAlertBackendSize(server string) (string, string) {
 			log.Info().Msgf("Alert %s is firing on pod %s deletion ongoing", alerts.Labels.Alertname, alerts.Labels.Pod)
 			podName := alerts.Labels.Pod
 			namespace := alerts.Labels.Namespace
+			log.Info().Msgf("alert.go Podname : %s Namespace : %s", podName, namespace)
 			//Proceeding to the deletion of pod if alert is firing
 			return podName, namespace
 		} else {

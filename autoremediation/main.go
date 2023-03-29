@@ -77,6 +77,7 @@ func main() {
 		log.Info().Msgf("Check ongoing")
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
 		podName, namespace := kuberemediate.GetVMAlertBackendSize(jsonUrl)
+		log.Info().Msgf("main.go podName : %s Namespace : %s", podName, namespace)
 		if (len(podName) > 0) && (len(namespace) > 0) {
 			log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podName, namespace)
 			kuberemediate.DeletePod(podName, clientset, namespace)

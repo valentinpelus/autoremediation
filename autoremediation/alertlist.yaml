@@ -1,0 +1,5 @@
+alertlist:
+  - alertname: "haproxyBackendSizeDivergence"
+    enabled: true
+  - alertname: "test"
+    enabled: false
