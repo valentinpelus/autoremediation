@@ -19,10 +19,10 @@ type Server struct {
 
 var Conf Config
 
-func LoadConf(confPath string) {
+func LoadConfKube(confPath string) {
 	yamlFile, err := os.ReadFile(confPath)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Can't read config file")
+		log.Fatal().Err(err).Msg("Can't read kuberemediate config file")
 		os.Exit(1)
 	}
 	err = yaml.Unmarshal(yamlFile, &Conf)
