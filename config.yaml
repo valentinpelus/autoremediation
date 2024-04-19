@@ -1,11 +1,13 @@
-queryUrl:
+queryUrl: http://localhost:9093
 clusterName:
 webhookUrl:
 slackClient:
   userName:
   channel:
-alertlist:
-  - alertname: "test1"
+alertRulesList:
+  - alertname: "haproxyBackendSizeDivergence"
     enabled: true
-  - alertname: "test2"
-    enabled: false
+    action: "deletePod"
+  - alertname: "test"
+    enabled: true
+    action: "deletePod"

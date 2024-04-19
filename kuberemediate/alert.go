@@ -2,7 +2,6 @@ package kuberemediate
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -36,7 +35,7 @@ var (
 
 var alertPodExtractList []string
 
-func GetVMAlertMatch(server string, ListSupportedAlert []string) (string, string, string) {
+func GetVMAlertMatch(server string, ListSupportedAlert [][]string) (string, string, string, string) {
 	// Initialisation of GET request
 	res, err := http.Get(server)
 	if err != nil {
@@ -57,27 +56,27 @@ func GetVMAlertMatch(server string, ListSupportedAlert []string) (string, string
 		log.Fatal().Msgf("Error in reading body %s ", err)
 	}
 
-	for _, list := range ListSupportedAlert {
-		fmt.Printf("%+v\n", list)
-	}
-
 	// Parsing Json return to match Alertname with the slice sent to the function
 	for _, alerts := range response.Data {
-		for _, supportedAlert := range ListSupportedAlert {
-			if alerts.Labels.AlertName == supportedAlert && len(alerts.Labels.Pod) > 0 {
-				alertPodExtractList = append(alertPodExtractList, alerts.Labels.Pod)
-				log.Info().Msgf("Alert %s is firing on pod %s deletion ongoing", alerts.Labels.AlertName, alerts.Labels.Pod)
+		alertName := alerts.Labels.AlertName
+		// Parsing all our supported alerts, if we find a match we append it to our slice then return it at the end
+		for i := range ListSupportedAlert {
+			if alertName == ListSupportedAlert[i][0] && len(alerts.Labels.Pod) > 0 {
 				podName := alerts.Labels.Pod
 				namespace := alerts.Labels.Namespace
-				alertName := alerts.Labels.AlertName
-				log.Info().Msgf("alert.go Podname : %s Namespace : %s", podName, namespace)
+				alertAction := ListSupportedAlert[i][1]
+				alertPodExtractList = append(alertPodExtractList, podName)
+				log.Info().Msgf("Alert %s is firing", alertName)
+				if podName != "" && namespace != "" {
+					log.Info().Msgf("alert.go Podname : %s Namespace : %s", podName, namespace)
+				}
 				//Proceeding to the deletion of pod if alert is firing
-				return podName, namespace, alertName
+				return podName, namespace, alertName, alertAction
 			} else {
-				log.Info().Msgf("No pod in state of backendsize divergence")
+				log.Info().Msgf("No alerts matching any enabled rules in remediate, continuing...")
 				continue
 			}
 		}
 	}
-	return "", "", ""
+	return "", "", "", ""
 }
