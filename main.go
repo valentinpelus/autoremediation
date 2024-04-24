@@ -53,15 +53,15 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	kuberemediate.LoadConf(*confPath)
+	kuberemediate.LoadConfKube(*confPath)
 
 	// Loading kubeconfig file with context
-	config, err := rest.InClusterConfig()
+	kube_config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
 	}
 	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(kube_config)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -73,13 +73,14 @@ func main() {
 	jsonUrl := kuberemediate.Conf.QueryURL + "/api/v1/alerts"
 
 	for {
-		time.Sleep(60 * time.Second)
+		time.Sleep(120 * time.Second)
 		log.Info().Msgf("Check ongoing")
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
-		podName, namespace := kuberemediate.GetVMAlertBackendSize(jsonUrl)
+		podName, namespace, alertname := kuberemediate.GetVMAlertBackendSize(jsonUrl)
 		if (len(podName) > 0) && (len(namespace) > 0) {
 			log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podName, namespace)
 			kuberemediate.DeletePod(podName, clientset, namespace)
+			postMessageSlack(alertname, namespace, confPath)
 		}
 	}
 }
