@@ -1,0 +1,11 @@
+queryUrl:
+clusterName:
+webhookUrl:
+slackClient:
+  userName:
+  channel:
+alertlist:
+  - alertname: "test1"
+    enabled: true
+  - alertname: "test2"
+    enabled: false
