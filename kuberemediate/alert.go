@@ -2,6 +2,7 @@ package kuberemediate
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -33,9 +34,9 @@ var (
 	Client HTTPClient
 )
 
-var alertPodExtractList []string
+var alertExtractList [][]string
 
-func GetVMAlertMatch(server string, ListSupportedAlert [][]string) (string, string, string, string) {
+func GetVMAlertMatch(server string, ListSupportedAlert [][]string) (array [][]string) {
 	// Initialisation of GET request
 	res, err := http.Get(server)
 	if err != nil {
@@ -56,27 +57,31 @@ func GetVMAlertMatch(server string, ListSupportedAlert [][]string) (string, stri
 		log.Fatal().Msgf("Error in reading body %s ", err)
 	}
 
+	alertExtractList = nil
+	fmt.Println("Print first of array when entering func alertExtractList : ", alertExtractList)
 	// Parsing Json return to match Alertname with the slice sent to the function
 	for _, alerts := range response.Data {
 		alertName := alerts.Labels.AlertName
+		fmt.Println("Print of range alerts alertExtractList : ", alertExtractList)
 		// Parsing all our supported alerts, if we find a match we append it to our slice then return it at the end
 		for i := range ListSupportedAlert {
 			if alertName == ListSupportedAlert[i][0] && len(alerts.Labels.Pod) > 0 {
 				podName := alerts.Labels.Pod
 				namespace := alerts.Labels.Namespace
 				alertAction := ListSupportedAlert[i][1]
-				alertPodExtractList = append(alertPodExtractList, podName)
+				alertExtractList = append(alertExtractList, []string{podName, namespace, alertAction, alertName})
+				fmt.Println("Print of range listsupportedAlert : ", i, alertExtractList)
 				log.Info().Msgf("Alert %s is firing", alertName)
 				if podName != "" && namespace != "" {
 					log.Info().Msgf("alert.go Podname : %s Namespace : %s", podName, namespace)
 				}
 				//Proceeding to the deletion of pod if alert is firing
-				return podName, namespace, alertName, alertAction
+				continue
 			} else {
 				log.Info().Msgf("No alerts matching any enabled rules in remediate, continuing...")
 				continue
 			}
 		}
 	}
-	return "", "", "", ""
+	return alertExtractList
 }
