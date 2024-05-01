@@ -20,7 +20,7 @@ type AlertList struct {
 var Alerts AlertList
 var EnabledAlertList [][]string
 
-func LoadConfKubeAlert(confPath string) {
+func LoadConfAlert(confPath string) {
 	yamlFile, err := os.ReadFile(confPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Can't read kuberemediate alerts config file")

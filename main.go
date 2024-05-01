@@ -39,7 +39,7 @@ func main() {
 
 	// Loading configuration files
 	kuberemediate.LoadConfKube(*confPath)
-	kuberemediate.LoadConfKubeAlert(*confPath)
+	kuberemediate.LoadConfAlert(*confPath)
 
 	// Loading kubeconfig file with context
 	kube_config, err := rest.InClusterConfig()
@@ -63,7 +63,7 @@ func main() {
 	fmt.Println(ListSupportedAlert)
 
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 		log.Info().Msgf("Check ongoing")
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
 		alertPodExtractList := kuberemediate.GetVMAlertMatch(jsonUrl, ListSupportedAlert)
@@ -80,10 +80,11 @@ func main() {
 				switch alertAction {
 				case "deletePod":
 					log.Info().Msgf("Delete pod %s in namespace %s on divergence", podName, namespace)
-					kuberemediate.DeletePod(podName, clientset, namespace)
+					kuberemediate.DeletePod(podName, clientset, namespace, len(alertPodExtractList))
+					time.Sleep(5 * time.Second)
 					postMessageSlack(alertName, namespace, confPath)
 				case "enrichAlert":
-					kuberemediate.DescribeDeployment(podName, clientset, namespace)
+					//kuberemediate.DescribeDeployment(podName, clientset, namespace)
 
 				}
 			}
