@@ -69,20 +69,26 @@ func main() {
 		alertPodExtractList := kuberemediate.GetVMAlertMatch(jsonUrl, ListSupportedAlert)
 		fmt.Println("Print of return alertPodExtractList : ", alertPodExtractList)
 		for i := range alertPodExtractList {
-			podName := alertPodExtractList[i][0]
-			namespace := alertPodExtractList[i][1]
-			alertAction := alertPodExtractList[i][2]
-			alertName := alertPodExtractList[i][3]
+			podInfo := make(map[string]interface{})
+			podInfo["podName"] = alertPodExtractList[i][0]
+			podInfo["namespace"] = alertPodExtractList[i][1]
+			podInfo["alertAction"] = alertPodExtractList[i][2]
+			podInfo["alertName"] = alertPodExtractList[i][3]
+			podInfo["podCount"] = len(alertPodExtractList)
+			fmt.Println("Pod count : ", podInfo["podCount"])
+
+			podName := podInfo["podName"].(string)
+			namespace := podInfo["namespace"].(string)
 			if (len(podName) > 0) && (len(namespace) > 0) {
-				log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podName, namespace)
+				log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podInfo["podName"], podInfo["namespace"])
 
 				// Parse returned alertPodExtractList to determine which action should be done with remediate
-				switch alertAction {
+				switch podInfo["alertAction"] {
 				case "deletePod":
-					log.Info().Msgf("Delete pod %s in namespace %s on divergence", podName, namespace)
-					kuberemediate.DeletePod(podName, clientset, namespace, len(alertPodExtractList))
+					log.Info().Msgf("Delete pod %s in namespace %s on divergence", podInfo["podName"], podInfo["namespace"])
+					kuberemediate.DeletePod(podInfo, clientset)
 					time.Sleep(5 * time.Second)
-					postMessageSlack(alertName, namespace, confPath)
+					postMessageSlack(podInfo["alertName"].(string), namespace, confPath)
 				case "enrichAlert":
 					//kuberemediate.DescribeDeployment(podName, clientset, namespace)
 
