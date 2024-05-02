@@ -6,11 +6,11 @@ It is composed of multiple packages making it able to correct recurring alerts o
 
 
 ## Table of Contents
-- [What's included](https://github.m6web.fr/sysadmin/auto-remediation#whats-included)
-- [Versioning](https://github.m6web.fr/sysadmin/auto-remediation#whats-included)
-- [How to use it](https://github.m6web.fr/sysadmin/auto-remediation#how-to-use-it)
-- [Contributing code](https://github.m6web.fr/sysadmin/auto-remediation#contributing-code)
-- [How to develop features](https://github.m6web.fr/sysadmin/auto-remediation#how-to-develop-features/fix)
+- [What's included](https://github.com/autoremediation#whats-included)
+- [Versioning](https://github.com/autoremediation#whats-included)
+- [How to use it](https://github.com/autoremediation#how-to-use-it)
+- [Contributing code](https://github.com/autoremediation#contributing-code)
+- [How to develop features](https://github.com/autoremediation#how-to-develop-features/fix)
 
 ### What's inclued
 
@@ -95,7 +95,7 @@ You can check also with the go env command :
   GOGCCFLAGS="-fPIC -m64 -pthread -fmessage-length=0 -fdebug-prefix-map=/tmp/go-build3590682015=/tmp/go-build -gno-record-gcc-switches"
   ```
 
-  We need to make some ajustment before begining by setting m6web go proxy to query package, for that we need to edit go env file :
+  We need to make some ajustment before begining by setting go proxy to query package, for that we need to edit go env file :
   ```sh
   mkdir -p $HOME/.config/go
   vim $HOME/.config/go/env
@@ -106,7 +106,7 @@ You can check also with the go env command :
 
 
   ``` sh
-  git clone git@github.m6web.fr:sysadmin/auto-remediation.git
+  git clone git@github.com:autoremediation.git
   cd auto-remediation
   ```
 
