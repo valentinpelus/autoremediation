@@ -68,7 +68,9 @@ func main() {
 		// Querying Alertmanager to check if alert is firing for backend size divergence and proceed to deletion if needed
 		alertPodExtractList := kuberemediate.GetVMAlertMatch(jsonUrl, ListSupportedAlert)
 		fmt.Println("Print of return alertPodExtractList : ", alertPodExtractList)
+		// Looping in the alerts list returned by GetVMAlerMatch
 		for i := range alertPodExtractList {
+			// Creating a map to store the pod information
 			podInfo := make(map[string]interface{})
 			podInfo["podName"] = alertPodExtractList[i][0]
 			podInfo["namespace"] = alertPodExtractList[i][1]
@@ -79,6 +81,7 @@ func main() {
 
 			podName := podInfo["podName"].(string)
 			namespace := podInfo["namespace"].(string)
+			// Check if podName and namespace are not empty
 			if (len(podName) > 0) && (len(namespace) > 0) {
 				log.Info().Msgf("Detecting pod %s in namespace %s on divergence", podInfo["podName"], podInfo["namespace"])
 
@@ -86,9 +89,11 @@ func main() {
 				switch podInfo["alertAction"] {
 				case "deletePod":
 					log.Info().Msgf("Delete pod %s in namespace %s on divergence", podInfo["podName"], podInfo["namespace"])
-					kuberemediate.DeletePod(podInfo, clientset)
+					triggeredAction := kuberemediate.DeletePod(podInfo, clientset)
 					time.Sleep(5 * time.Second)
-					postMessageSlack(podInfo["alertName"].(string), namespace, confPath)
+					if triggeredAction {
+						postMessageSlack(podInfo["alertName"].(string), namespace, confPath)
+					}
 				case "enrichAlert":
 					//kuberemediate.DescribeDeployment(podName, clientset, namespace)
 

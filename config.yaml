@@ -5,9 +5,9 @@ slackClient:
   userName:
   channel:
 alertRulesList:
-  - alertname: "haproxyBackendSizeDivergence"
+  - alertname: "test1"
     enabled: true
     action: "deletePod"
-  - alertname: "test"
+  - alertname: "test2"
     enabled: true
     action: "deletePod"

@@ -1,0 +1,10 @@
+---
+name: remediate
+apiVersion: v2
+description: Pod Remediate requesting alertmanager to solve automatically problems on K8S cluster's
+keywords:
+  - remediation
+  - remediate
+
+version: 1.0.0
+appVersion: 1.0.0

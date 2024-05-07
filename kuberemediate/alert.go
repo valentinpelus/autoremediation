@@ -66,6 +66,7 @@ func GetVMAlertMatch(server string, ListSupportedAlert [][]string) (array [][]st
 		// Parsing all our supported alerts, if we find a match we append it to our slice then return it at the end
 		for i := range ListSupportedAlert {
 			if alertName == ListSupportedAlert[i][0] && len(alerts.Labels.Pod) > 0 {
+				// If we find a match we append the podname, namespace, alertaction and alertname to our slice
 				podName := alerts.Labels.Pod
 				namespace := alerts.Labels.Namespace
 				alertAction := ListSupportedAlert[i][1]

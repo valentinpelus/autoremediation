@@ -84,6 +84,7 @@ func CheckPodPresent(podInfo map[string]interface{}, clientset *kubernetes.Clien
 		}
 	} else {
 		log.Warn().Msgf("Warning issued during deletion, the ratio between unhealthy pod and healthy one is not optimal, therefore no action will be taken. Backing off")
+		return false
 	}
 	return false
 }
