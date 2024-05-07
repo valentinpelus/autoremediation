@@ -1,0 +1,23 @@
+---
+
+repositories: []
+
+helmDefaults:
+  historyMax: 10
+  wait: true
+
+helmBinary: helm
+
+releases:
+  - name: remediate
+    labels:
+      app: remediate
+    namespace: {{ .Values.remediation.security.namespace_remediate }}
+    chart: ./remediate
+    installed: true
+    missingFileHandler: Warn
+    values:
+      - values/default/remediate.yaml.gotmpl
+      - values/{{ .Environment.Name }}/values.yaml.gotmpl
+    secrets:
+      - values/default/{{ .Environment.Name }}/{{ .Environment.Name }}.secrets.yaml
