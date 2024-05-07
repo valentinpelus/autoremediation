@@ -1,0 +1,66 @@
+# Registry from which the image will be pulled
+imageRegistry:
+
+# Number of replicas wanted for remediate. It is a deployment not a daemonset or statefull set
+replicaCount: 1
+
+# Config block for the remediate deployment, configuring the label and security settings
+remediation:
+  config:
+    labelKeys:
+    - tenant
+    # URL of the the alertmanager to query alerts (only supporting alertmanager at the moment)
+    queryUrl:
+    # Name of the cluster on which remediate is deployed (optional, will be used when the alert is send to slack)
+    clusterName:
+    # Configuration block to set up alerting through slack
+    slackClient:
+      # Username that will be display on the message
+      userName:
+      # Channel on which the message will be send
+      channel:
+    # List of alert rules to be configured and managed by remediate
+    alertRulesList:
+    # Alertname of the alert to be managed, remediate will use this value to check if an alert on alertmanager is supported by it's configuration
+    - alertname: "testAlert"
+      # Enable or disable the alert
+      enabled: true
+      # Action to be done when the alert is triggered
+      action: "deletePod"
+  security:
+    # Service account to create for remediate
+    serviceaccount: sa-remediate
+    # Role to create for remediate
+    role: role-remediate
+    # Rolebinding to create for remediate
+    rolebinding: rolebinding:remediate-appl
+    # Namespace on which the remediate deployment will be deployed
+    namespace_remediate: test_namespace
+    # Namespace on which the role_binding will be done
+    namespace_ic: test_namespace_target
+
+# Type of service wanted for remediate
+service:
+  type: ClusterIP
+
+# Configuration block containing the pullPolicy of the image and it's tag
+go:
+  image:
+    pullPolicy: IfNotPresent
+    tag: 1.0.0
+
+# Label block to append to your deployment (Optionnal)
+projectLabels:
+  project: remediate
+  tenant: any
+
+# Resources wanted for the application, it consume relatively low resources (can be check and adjusted using KRR for ex)
+resources:
+  limits:
+    memory: 150Mi
+  requests:
+    cpu: 50m
+    memory: 50Mi
+
+# WebhookUrl value to send alerts through slack. Can be convert to secret with sops
+webhookUrl:

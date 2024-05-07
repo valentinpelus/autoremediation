@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  config.yaml: |
+    queryUrl: {{ .Values.remediation.config.queryUrl | toYaml | nindent 6 }}
+    clusterName: {{ .Values.remediation.config.clusterName | toYaml | nindent 6 }}
+    webhookUrl: {{ .Values.webhookUrl | toYaml | nindent 6 }}
+    slackClient:
+      userName: {{ .Values.remediation.config.slackClient.userName | toYaml | nindent 8 }}
+      channel: {{ .Values.remediation.config.slackClient.channel | toYaml | nindent 8 }}
+    alertRulesList:
+    {{- range .Values.remediation.config.alertRulesList }}
+    - alertname:  {{ .alertname | toYaml | nindent 8 }}
+      enabled: {{ .enabled | toYaml | nindent 10 }}
+      action:{{ .action | toYaml | nindent 10 }}
+    {{- end}}

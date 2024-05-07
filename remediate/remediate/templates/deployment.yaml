@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels: {{ .Values.projectLabels | toYaml | nindent 4 }}
+    project/name: {{ .Release.Name }}
+    project/type: remediation
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      project/type: remediation
+      project/name: {{ .Release.Name }}
+  template:
+    metadata:
+      labels: {{ .Values.projectLabels | toYaml | nindent 8 }}
+        project/name: {{ .Release.Name }}
+        project/type: remediation
+    spec:
+      containers:
+      - name: remediate
+        image: "{{ .Values.imageRegistry }}/{{ required ".Values.projectLabels.project is mandatory" .Values.projectLabels.project }}:{{ required "An image tag is required at .Values.go.image.tag" .Values.go.image.tag }}"
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+      {{- with .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.remediation.security.serviceaccount }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-config
+          defaultMode: 0755
