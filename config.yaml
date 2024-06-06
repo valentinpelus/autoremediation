@@ -1,6 +1,13 @@
-queryUrl:
+queryUrl: http://localhost:9093
 clusterName:
 webhookUrl:
 slackClient:
   userName:
   channel:
+alertRulesList:
+  - alertname: "test1"
+    enabled: true
+    action: "deletePod"
+  - alertname: "test2"
+    enabled: true
+    action: "deletePod"

@@ -27,7 +27,7 @@ func LoadConfKube(confPath string) {
 	}
 	err = yaml.Unmarshal(yamlFile, &Conf)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Unmarshal error")
+		log.Fatal().Err(err).Msg("Unmarshal error in kube configuration parsing")
 		os.Exit(1)
 	}
 }

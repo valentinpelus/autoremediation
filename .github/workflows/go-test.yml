@@ -19,3 +19,8 @@ jobs:
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v2
+
+    - name: go-test
+      run: |
+        go test -v ./kuberemediate/
+        go test -v ./notification/

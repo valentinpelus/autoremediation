@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/valentinpelus/go-package/notification"
+	"remediate/notification"
 
 	"github.com/rs/zerolog/log"
 )
