@@ -16,9 +16,10 @@ type SlackClientWebhook struct {
 }
 
 type SlackClient struct {
-	UserName string
-	Channel  string
-	TimeOut  time.Duration
+	UserName   string
+	Channel    string
+	TimeOut    time.Duration
+	WebHookUrl string
 }
 
 type SimpleSlackRequest struct {

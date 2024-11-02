@@ -1,7 +1,6 @@
 package notification
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -20,7 +19,7 @@ type ConfigSlackYaml struct {
 var ConfigurationSlack ConfigSlackYaml
 
 func LoadConfSlack(confPath string) {
-	yamlFile, err := ioutil.ReadFile(confPath)
+	yamlFile, err := os.ReadFile(confPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Can't read notification config file")
 		os.Exit(1)
